@@ -541,13 +541,9 @@ export function handlePlayerAttack(world: SimWorldState, p: SimPlayer, rng: () =
   const equipped = getEquippedItem(p);
   const def = equipped ? ITEMS[equipped.id] : undefined;
 
-  // Unarmed punch fallback
+  // Only the weapon in the active slot can attack.
   if (!equipped || !def || (def.category !== 'melee' && def.category !== 'gun')) {
-    p.attackCd = 0.45;
-    p.swingTimer = 0.22;
-    world.events.push({ k: 'swing', pid: p.id });
-    meleeHit(world, p, 10, 1.55, 1.1, 2.0, 5);
-    return true;
+    return false;
   }
 
   if (def.category === 'melee') {

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { INITIAL_GROUND_DROPS, TICK_DT, WORLD_SIZE } from './constants.js';
-import { countItemInInventory, makeItem } from './items.js';
+import { ITEMS, countItemInInventory, makeItem } from './items.js';
 import {
   buildSnapshotForPlayer,
   createDefaultPlayerData,
@@ -29,11 +29,41 @@ function makeDeterministicRng(seed = 1234): () => number {
   };
 }
 
+test('attack requires a weapon in the active slot, not just in the inventory', () => {
+  const rng = makeDeterministicRng(42);
+  const world = createWorldState(1001, undefined, 1700000000000, rng);
+  const p = playerFromSaved(1, 'u1', 'Kai', createDefaultPlayerData(rng), world.town);
+  const zombie = world.zombies.values().next().value!;
+  zombie.x = p.x + 1.2;
+  zombie.y = p.y;
+  p.angle = 0;
+  const hp = zombie.hp;
+  const stamina = p.stamina;
+  const nonWeapons = Object.values(ITEMS).filter(d => d.category !== 'melee' && d.category !== 'gun');
+  for (const def of [undefined, ...nonWeapons]) {
+    p.inventory = def ? [makeItem(def.id, 1), makeItem('baseball_bat', 1)] : [makeItem('baseball_bat', 1)];
+    p.activeSlot = def ? 0 : 1;
+    world.events.length = 0;
+    assert.equal(handlePlayerAttack(world, p, rng), false, def?.id ?? 'empty slot');
+    assert.equal(zombie.hp, hp);
+    assert.equal(p.stamina, stamina);
+    assert.equal(p.attackCd, 0);
+    assert.equal(p.swingTimer, 0);
+    assert.equal(world.events.length, 0);
+  }
+  p.activeSlot = 1;
+  assert.equal(handlePlayerAttack(world, p, rng), true);
+  assert.ok(zombie.hp < hp);
+});
+
 test('player combat, shove, and looting update state deterministically', () => {
   const rng = makeDeterministicRng(42);
   const world = createWorldState(1001, undefined, 1700000000000, rng);
   const p = playerFromSaved(1, 'u1', 'Kai', createDefaultPlayerData(rng), world.town);
   world.players.set(1, p);
+
+  p.inventory = [makeItem('baseball_bat', 1)];
+  p.activeSlot = 0;
 
   // Place a zombie right in front of player
   const firstZombie = world.zombies.values().next().value;
