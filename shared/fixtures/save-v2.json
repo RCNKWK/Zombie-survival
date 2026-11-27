@@ -1,0 +1,62 @@
+{
+  "v": 2,
+  "player": {
+    "x": 51.12,
+    "y": 69.88,
+    "angle": -0.75,
+    "hp": 92.5,
+    "stamina": 88,
+    "hunger": 74,
+    "thirst": 69,
+    "bleeding": 0,
+    "panic": 12.5,
+    "infected": 0,
+    "battery": 84.2,
+    "flashlightOn": true,
+    "sneaking": false,
+    "kills": 14,
+    "daysSurvived": 4,
+    "activeSlot": 1,
+    "inventory": [
+      { "id": "axe", "qty": 1, "dur": 49 },
+      { "id": "pistol", "qty": 1, "dur": 86 },
+      { "id": "ammo_9mm", "qty": 12 },
+      { "id": "flashlight", "qty": 1 },
+      { "id": "water_bottle", "qty": 1 }
+    ]
+  },
+  "world": {
+    "seed": 9001,
+    "worldTimeMin": 510.25,
+    "day": 5,
+    "lastSavedAt": 1730000000000,
+    "containers": {
+      "b_police_c0": {
+        "looted": true,
+        "restockDay": 7,
+        "items": []
+      }
+    },
+    "barricades": [
+      {
+        "id": "b_4_3",
+        "kind": "campfire",
+        "x": 49.5,
+        "y": 73.1,
+        "angle": 0,
+        "hp": 120,
+        "maxHp": 120,
+        "ownerId": "kai"
+      }
+    ],
+    "droppedLoot": [
+      {
+        "id": "d_5_2",
+        "x": 52.3,
+        "y": 71.4,
+        "items": [{ "id": "rag", "qty": 2 }],
+        "droppedAt": 1730000000000
+      }
+    ]
+  }
+}

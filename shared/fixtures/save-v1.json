@@ -1,0 +1,46 @@
+{
+  "v": 1,
+  "player": {
+    "x": 49.5,
+    "y": 72.25,
+    "angle": 1.2,
+    "hp": 84,
+    "stamina": 76,
+    "hunger": 62,
+    "thirst": 58,
+    "bleeding": 1,
+    "kills": 7,
+    "daysSurvived": 2,
+    "activeSlot": 0,
+    "inventory": [
+      { "id": "baseball_bat", "qty": 1, "dur": 34 },
+      { "id": "bandage", "qty": 2 },
+      { "id": "canned_food", "qty": 1 }
+    ]
+  },
+  "world": {
+    "seed": 4242,
+    "worldTimeMin": 1245.5,
+    "day": 3,
+    "lastSavedAt": 1700000000000,
+    "containers": {
+      "b_safehouse_c0": {
+        "looted": true,
+        "restockDay": 5,
+        "items": []
+      }
+    },
+    "barricades": [
+      {
+        "id": "b_2_1",
+        "kind": "barricade",
+        "x": 48,
+        "y": 67.8,
+        "angle": 0,
+        "hp": 140,
+        "maxHp": 160,
+        "ownerId": "kai"
+      }
+    ]
+  }
+}

@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Deadzone County — Co-op Survival</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <div id="game-root">
+      <canvas id="game-canvas"></canvas>
+
+      <!-- Top-left: Player vitals & moodles -->
+      <div id="hud-vitals" class="panel hidden">
+        <div class="vitals-header">
+          <span id="hud-player-name">Survivor</span>
+          <span id="hud-kills" class="badge">0 Kills</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">HP</span>
+          <div class="bar"><div id="bar-hp" class="bar-fill hp"></div></div>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">STM</span>
+          <div class="bar"><div id="bar-st" class="bar-fill st"></div></div>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">FOOD</span>
+          <div class="bar"><div id="bar-hu" class="bar-fill hu"></div></div>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">H2O</span>
+          <div class="bar"><div id="bar-th" class="bar-fill th"></div></div>
+        </div>
+        <div id="hud-moodles" class="moodles"></div>
+      </div>
+
+      <!-- Top-right: Clock, world status, save indicator, controls -->
+      <div id="hud-top-right" class="panel hidden">
+        <div class="clock-row">
+          <span id="hud-day">Day 1</span>
+          <span id="hud-time">08:00</span>
+        </div>
+        <div class="meta-row">
+          <span id="hud-ping">-- ms</span>
+          <span id="hud-save-status" class="save-pill">Synced</span>
+        </div>
+        <div class="top-actions">
+          <button id="btn-save" class="mini-btn" title="Manual Save">Save</button>
+          <button id="btn-emote" class="mini-btn" title="Emotes (T)">Emote</button>
+          <button id="btn-help" class="mini-btn" title="Controls">?</button>
+          <button id="btn-leave" class="mini-btn danger" title="Leave World">Leave</button>
+        </div>
+      </div>
+
+      <!-- Context Prompt -->
+      <div id="interact-prompt" class="prompt hidden">Press [E] to Loot</div>
+
+      <!-- Toast Feed -->
+      <div id="toast-feed"></div>
+
+      <!-- Emote Picker -->
+      <div id="emote-wheel" class="panel hidden">
+        <button class="emote-opt" data-e="1">👋 Hi</button>
+        <button class="emote-opt" data-e="2">⚠️ Help!</button>
+        <button class="emote-opt" data-e="3">🏃 Follow</button>
+        <button class="emote-opt" data-e="4">🤫 Shh</button>
+        <button class="emote-opt" data-e="5">📦 Loot</button>
+        <button class="emote-opt" data-e="6">👍 Good</button>
+      </div>
+
+      <!-- Bottom Hotbar & Quick toggles -->
+      <div id="hud-bottom" class="hidden">
+        <div id="hotbar" class="panel"></div>
+        <div class="quick-toggles panel">
+          <button id="btn-flash" class="toggle-btn" title="Flashlight (F)">🔦 <span id="flash-pct">100%</span></button>
+          <button id="btn-sneak" class="toggle-btn" title="Sneak (C)">👣 Sneak</button>
+          <button id="btn-drop" class="toggle-btn" title="Drop Held Item (Q)">⬇️ Drop</button>
+          <button id="btn-bag" class="toggle-btn" title="Backpack (I / Tab)">🎒 Bag</button>
+          <button id="btn-build" class="toggle-btn" title="Craft & Build (B)">🔨 Build</button>
+        </div>
+      </div>
+
+      <!-- Search and selective loot: the server reveals contents after searching. -->
+      <section id="loot-panel" class="panel hidden" role="region" aria-label="Search and loot">
+        <div class="loot-heading">
+          <div><div class="loot-eyebrow">SCAVENGE</div><h3 id="loot-title">Container</h3></div>
+          <button id="close-loot" class="mini-btn" aria-label="Close loot">Close · Esc</button>
+        </div>
+        <div id="loot-search">
+          <div class="loot-search-caption"><span>Searching…</span><span id="loot-time"></span></div>
+          <progress id="loot-progress" max="100" value="0" aria-label="Search progress"></progress>
+          <p class="loot-hint">Stay still. Moving, fighting or taking damage cancels the search.</p>
+        </div>
+        <div id="loot-ready" class="hidden">
+          <div class="loot-toolbar"><span id="loot-count"></span><button id="loot-take-all" class="mini-btn">Take all</button></div>
+          <div id="loot-items"></div>
+          <p id="loot-empty" class="loot-hint hidden">Nothing left here.</p>
+        </div>
+        <div class="loot-backpack"><span>YOUR BACKPACK</span><strong id="loot-bag-count">0 / 16 slots</strong></div>
+        <div id="loot-bag-preview"></div>
+        <p class="loot-hint loot-footer">Take only what you need · E / Esc to close</p>
+      </section>
+
+      <!-- Backpack Drawer -->
+      <div id="bag-panel" class="panel modal-panel hidden">
+        <div class="modal-head">
+          <h3>Backpack (<span id="bag-count">0/16</span>)</h3>
+          <button id="close-bag" class="mini-btn">✕</button>
+        </div>
+        <div id="bag-grid" class="bag-grid"></div>
+        <div class="modal-hint">Click item to use/equip · Right-click (or Drop btn) to drop</div>
+      </div>
+
+      <!-- Craft & Build Drawer -->
+      <div id="build-panel" class="panel modal-panel hidden">
+        <div class="modal-head">
+          <h3>Craft & Barricade</h3>
+          <button id="close-build" class="mini-btn">✕</button>
+        </div>
+        <div id="build-list" class="build-list"></div>
+      </div>
+
+      <!-- Help Drawer -->
+      <div id="help-panel" class="panel modal-panel hidden">
+        <div class="modal-head">
+          <h3>Survival Guide</h3>
+          <button id="close-help" class="mini-btn">✕</button>
+        </div>
+        <ul class="help-list">
+          <li><b>WASD</b>: Move · <b>Shift</b>: Sprint (loud) · <b>C</b>: Sneak (quiet)</li>
+          <li><b>Mouse</b>: Aim · <b>Left Click</b>: Attack / Shoot</li>
+          <li><b>Right Click / Space</b>: Shove / Knockdown zombies</li>
+          <li><b>E</b>: Search nearby containers / Inspect ground items, then choose what to take</li>
+          <li><b>Q</b>: Drop held item onto the ground</li>
+          <li><b>F</b>: Toggle Flashlight · <b>1–4</b>: Hotbar slots</li>
+          <li><b>I / Tab</b>: Backpack (eat, drink, bandage) · <b>B</b>: Craft &amp; Barricade</li>
+        </ul>
+      </div>
+
+      <!-- Mobile Touch Controls (auto-shown on touch devices) -->
+      <div id="mobile-controls" class="hidden">
+        <div id="stick-left" class="touch-stick left"><div class="stick-knob"></div></div>
+        <div id="stick-right" class="touch-stick right"><div class="stick-knob"></div></div>
+        <div class="mobile-buttons">
+          <button id="m-shove" class="m-btn">SHOVE</button>
+          <button id="m-interact" class="m-btn accent">LOOT</button>
+          <button id="m-sprint" class="m-btn">RUN</button>
+        </div>
+      </div>
+
+      <!-- Death Overlay -->
+      <div id="death-overlay" class="overlay hidden">
+        <div class="overlay-card">
+          <h2>YOU WERE OVERRUN</h2>
+          <p>Your backpack was dropped where you fell. Reclaim it with a fresh survivor.</p>
+          <button id="btn-respawn" class="primary-btn">Respawn at Safe House</button>
+        </div>
+      </div>
+
+      <!-- Loading / Status / Error Overlay -->
+      <div id="status-overlay" class="overlay">
+        <div class="overlay-card">
+          <h1 class="title-logo">DEADZONE COUNTY</h1>
+          <p id="status-text">Connecting to survival world...</p>
+          <button id="btn-overlay-leave" class="primary-btn hidden">Return to World Lobby</button>
+          <button id="btn-overlay-retry" class="mini-btn hidden">Retry Connection</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
